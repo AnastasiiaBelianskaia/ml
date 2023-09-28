@@ -1,7 +1,13 @@
 import numpy
+import matplotlib
+matplotlib.use('Agg')
+import pandas as pd
 import matplotlib.pyplot as plt
 from scipy import stats
+from sklearn import linear_model, tree
+from sklearn.tree import DecisionTreeClassifier
 from sklearn.metrics import r2_score
+from sklearn.preprocessing import StandardScaler
 
 
 def standart_deviation():
@@ -42,7 +48,6 @@ def plot():
     plt.scatter(car_age, car_speed)
     plt.xlabel('Car age')
     plt.ylabel('Car speed')
-
     return plt.show()
 
 
@@ -92,13 +97,138 @@ def polinomial_regression():
     return plt.show()
 
 
+def multiple_regression():
+    df = pd.read_csv('data.csv')
+    x = df[['Weight', 'Volume']]
+    y = df['CO2']
+
+    regr = linear_model.LinearRegression()
+    regr.fit(x.values, y.values)
+
+    # predict the CO2 emission of a car where the weight is 2300kg, and the volume is 1300cm3:
+    predictedCO2 = regr.predict([[2300, 1300]])
+    # Coefficient values tell us that if the weight increase by 1kg, the CO2 emission increases by 0.00755095g,
+    # and if the engine size (Volume) increases by 1 cm3, the CO2 emission increases by 0.00780526 g.
+    print('Coefficient: ', regr.coef_)
+    return predictedCO2
+
+
+def second_example_multiple_regression():
+    df = pd.read_csv('data.csv')
+    x = df[['Weight', 'Volume']]
+    y = df['CO2']
+
+    regr = linear_model.LinearRegression()
+    regr.fit(x.values, y.values)
+
+    # predict the CO2 emission of a car where the weight is 3300kg, and the volume is 1300cm3:
+    predictedCO2 = regr.predict([[3300, 1300]])
+    return predictedCO2
+
+
+def scale_values():
+    scale = StandardScaler()
+
+    df = pd.read_csv('data.csv')
+    x = df[['Weight', 'Volume']]
+
+    scaledX = scale.fit_transform(x)
+    return scaledX
+
+
+# ???
+def second_scaled_values():
+    scale = StandardScaler()
+
+    df = pd.read_csv('data.csv')
+    x = df[['Weight', 'Volume']]
+    y = df['CO2']
+
+    scaledX = scale.fit_transform(x)
+
+    regr = linear_model.LinearRegression()
+    regr.fit(scaledX, y.values)
+
+    scaled = scale.transform([[2300, 1.3]])
+    predictedCO2 = regr.predict([scaled[0]])
+    return predictedCO2
+
+
+def train_test():
+    """ The x axis represents the number of minutes before making a purchase.
+        The y axis represents the amount of money spent on the purchase."""
+
+    numpy.random.seed(2)
+
+    x = numpy.random.normal(3, 1, 100)
+    y = numpy.random.normal(150, 40, 100)/x
+
+    # Split Into Train/Test
+    # The training set should be a random selection of 80% of the original data.
+    # The testing set should be the remaining 20%.
+    train_x = x[:80]
+    train_y = y[:80]
+
+    test_x = x[80:]
+    test_y = y[80:]
+
+    mymodel = numpy.poly1d(numpy.polyfit(train_x, train_y, 4))
+    myline = numpy.linspace(0, 6, 100)
+
+    plt.scatter(train_x, train_y)
+    # plt.scatter(test_x, test_y)
+    plt.plot(myline, mymodel(myline))
+
+    # r2 = r2_score(train_y, mymodel(train_x))
+    r2 = r2_score(test_y, mymodel(test_x))
+    print('r2: ', r2)
+
+    # How much money will a buying customer spend, if she or he stays in the shop for 5 minutes?
+    print('Predicted: ', mymodel(5))
+    return plt.show()
+
+
+def decision_tree():
+    """ To make a decision tree, all data has to be numerical. """
+
+    df = pd.read_csv('data_tree.csv')
+    # Change string values into numerical values:
+    d = {'UK': 0, 'USA': 1, 'N': 2}
+    df['Nationality'] = df['Nationality'].map(d)
+    d = {'YES': 1, 'NO': 0}
+    df['Go'] = df['Go'].map(d)
+
+    # separate the feature columns(we try to predict from) from the target column(we try to predict).
+    features = ['Age', 'Experience', 'Rank', 'Nationality']
+    x = df[features]
+    y = df['Go']
+
+    dtree = DecisionTreeClassifier()
+    dtree = dtree.fit(x.values, y.values)
+    tree.plot_tree(dtree, feature_names=features)
+    # save tree to png:
+    plt.savefig('./1.png')
+    # Should I go see a show starring a 40 years old American comedian,
+    # with 10 years of experience, and a comedy ranking of 7?
+    print(dtree.predict([[40, 10, 7, 1]]))
+    print("[1] means 'GO'")
+    print("[0] means 'NO'")
+    return
+
+
 if __name__ == '__main__':
-    # print(standart_deviation())
-    # print(variance())
-    # print(percentile())
-    # print(data_set())
-    # gaussian_data_distribution()
-    # plot()
-    # random_data_distribution()
-    # linear_regression()
+    print(standart_deviation())
+    print(variance())
+    print(percentile())
+    print(data_set())
+    gaussian_data_distribution()
+    plot()
+    random_data_distribution()
+    linear_regression()
     polinomial_regression()
+    print('Predicted CO2: ', multiple_regression(), 'grams')
+    print('Predicted CO2: ', second_example_multiple_regression(), 'grams')
+    print(scale_values())
+    print(second_scaled_values())
+    train_test()
+    decision_tree()
