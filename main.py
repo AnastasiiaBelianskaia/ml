@@ -1,10 +1,12 @@
 import numpy
-import matplotlib
-matplotlib.use('Agg')
+# import matplotlib
+# matplotlib.use('Agg')
 import pandas as pd
 import matplotlib.pyplot as plt
 from scipy import stats
-from sklearn import linear_model, tree
+from scipy.cluster.hierarchy import dendrogram, linkage
+from sklearn import linear_model, tree, metrics
+from sklearn.cluster import AgglomerativeClustering
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.metrics import r2_score
 from sklearn.preprocessing import StandardScaler
@@ -216,6 +218,71 @@ def decision_tree():
     return
 
 
+def conf_matrix():
+    actual = numpy.random.binomial(1, .9, 1000)
+    predicted = numpy.random.binomial(1, .9, 1000)
+    accuracy = metrics.accuracy_score(actual, predicted)
+    print('accuracy: ', accuracy)
+    precision = metrics.precision_score(actual, predicted)
+    print('precision: ', precision)
+    sensitivity_recall = metrics.recall_score(actual, predicted)
+    print('sensitivity_recall: ', sensitivity_recall)
+    specificity = metrics.recall_score(actual, predicted, pos_label=0)
+    print('specificity: ', specificity)
+    f1_score = metrics.f1_score(actual, predicted)
+    print('f1_score: ', f1_score)
+    confusion_matrix = metrics.confusion_matrix(actual, predicted)
+    cm_display = metrics.ConfusionMatrixDisplay(confusion_matrix=confusion_matrix, display_labels=[False, True])
+    cm_display.plot()
+    return plt.show()
+
+
+def hierarchical_clustering():
+    x = [4, 5, 10, 4, 3, 11, 14, 6, 10, 12]
+    y = [21, 19, 24, 17, 16, 25, 24, 22, 21, 21]
+    data = list(zip(x, y))
+    linkage_data = linkage(data, method='ward', metric='euclidean')
+    dendrogram(linkage_data)
+    # or the same with scikit-learn library:
+    # hierarchical_cluster = AgglomerativeClustering(n_clusters=2, metric='euclidean', linkage='ward')
+    # labels = hierarchical_cluster.fit_predict(data)
+    # plt.scatter(x, y, c=labels)
+    return plt.show()
+
+
+def logistic_regression_binomial():
+    # X represents the size of a tumor in centimeters.
+    x = numpy.array([3.78, 2.44, 2.09, 0.14, 1.72, 1.65, 4.92, 4.37, 4.96, 4.52, 3.69, 5.88]).reshape(-1, 1)
+
+    # X has to be reshaped into a column from a row for the LogisticRegression() function to work.
+    # y represents whether or not the tumor is cancerous (0 for "No", 1 for "Yes").
+    y = numpy.array([0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1])
+    logr = linear_model.LogisticRegression()
+    logr.fit(x, y)
+
+    log_odds = logr.coef_
+    odds = numpy.exp(log_odds)
+    # tells us that as the size of a tumor increases by 1mm the odds of it being a cancerous tumor increases by 4x.
+    print('odds: ', odds)
+    # predict if tumor is cancerous where the size is 3.46mm:
+    predicted = logr.predict(numpy.array([3.46]).reshape(-1, 1))
+    return predicted
+
+
+def probability():
+    # 3.78 0.61 The probability that a tumor with the size 3.78cm is cancerous is 61% etc.
+    x = numpy.array([3.78, 2.44, 2.09, 0.14, 1.72, 1.65, 4.92, 4.37, 4.96, 4.52, 3.69, 5.88]).reshape(-1, 1)
+    y = numpy.array([0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1])
+
+    logr = linear_model.LogisticRegression()
+    logr.fit(x, y)
+
+    log_odds = logr.coef_ * x + logr.intercept_
+    odds = numpy.exp(log_odds)
+    prob = odds / (1 + odds)
+    return prob
+
+
 if __name__ == '__main__':
     print(standart_deviation())
     print(variance())
@@ -232,3 +299,7 @@ if __name__ == '__main__':
     print(second_scaled_values())
     train_test()
     decision_tree()
+    conf_matrix()
+    hierarchical_clustering()
+    print('predicted: ', logistic_regression_binomial())
+    print(probability())
