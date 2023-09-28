@@ -5,11 +5,12 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from scipy import stats
 from scipy.cluster.hierarchy import dendrogram, linkage
-from sklearn import linear_model, tree, metrics
+from sklearn import linear_model, tree, metrics, datasets
 from sklearn.cluster import AgglomerativeClustering
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.metrics import r2_score
 from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import LogisticRegression
 
 
 def standart_deviation():
@@ -283,23 +284,55 @@ def probability():
     return prob
 
 
+def default_c():
+    # load in the dataset.
+    iris = datasets.load_iris()
+
+    x = iris['data']
+    y = iris['target']
+
+    logit = LogisticRegression(max_iter=10000)
+    print(logit.fit(x, y))
+    print(logit.score(x, y))
+    return
+
+
+def grid_search():
+    iris = datasets.load_iris()
+    x = iris['data']
+    y = iris['target']
+
+    logit = LogisticRegression(max_iter=10000)
+
+    C = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2]
+    scores = []
+
+    for choice in C:
+        logit.set_params(C=choice)
+        logit.fit(x, y)
+        scores.append((logit.score(x, y)))
+    return scores
+
+
 if __name__ == '__main__':
-    print(standart_deviation())
-    print(variance())
-    print(percentile())
-    print(data_set())
-    gaussian_data_distribution()
-    plot()
-    random_data_distribution()
-    linear_regression()
-    polinomial_regression()
-    print('Predicted CO2: ', multiple_regression(), 'grams')
-    print('Predicted CO2: ', second_example_multiple_regression(), 'grams')
-    print(scale_values())
-    print(second_scaled_values())
-    train_test()
-    decision_tree()
-    conf_matrix()
-    hierarchical_clustering()
-    print('predicted: ', logistic_regression_binomial())
-    print(probability())
+    # print(standart_deviation())
+    # print(variance())
+    # print(percentile())
+    # print(data_set())
+    # gaussian_data_distribution()
+    # plot()
+    # random_data_distribution()
+    # linear_regression()
+    # polinomial_regression()
+    # print('Predicted CO2: ', multiple_regression(), 'grams')
+    # print('Predicted CO2: ', second_example_multiple_regression(), 'grams')
+    # print(scale_values())
+    # print(second_scaled_values())
+    # train_test()
+    # decision_tree()
+    # conf_matrix()
+    # hierarchical_clustering()
+    # print('predicted: ', logistic_regression_binomial())
+    # print(probability())
+    # default_c()
+    print(grid_search())
